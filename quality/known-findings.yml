@@ -1,0 +1,20 @@
+# Acknowledged findings — the public half of the triage record.
+#
+# THIS FILE IS DELIBERATELY THIN.
+# The full write-up for each finding (impact, likely cause, recommendation,
+# decision, owner) lives in FINDINGS.md in the PRIVATE hackathon-organisers
+# repository. Open bug reports about data we are about to hand to participants
+# are internal; the fact that a failure is already known is not, and the public
+# CI gate needs that fact to tell "known" from "new".
+#
+# So this carries the minimum a machine needs and nothing a reader would call a
+# bug report: an id, enough of the expectation description to match on, and a
+# one-line status.
+#
+# `run_assurance.py --allow-known-findings` exits 0 when every failure matches an
+# entry here. Adding an entry is therefore how a red build is turned green, and
+# it is deliberately a diff someone has to review.
+
+version: 1
+
+findings: []

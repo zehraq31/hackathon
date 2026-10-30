@@ -1,0 +1,232 @@
+# Challenge 05 — Ahead of the Heat (Charity · patient safety)
+#
+# See catalogue/c02-mapping-the-gaps.yml for the fully worked example and the reasoning
+# behind the `redistributable` / `licence_reviewed` gates. The build refuses to mirror
+# bytes for any source that has not cleared both.
+
+challenge: c05-ahead-of-the-heat
+title: Ahead of the Heat
+domain: Charity · patient safety
+event_date: 2027-05-01
+publisher: Innovation Forum
+contact: info@inno-forum.co.uk
+
+
+attribution: >-
+  Contains public sector information licensed under the Open Government Licence v3.0.
+
+
+handle_with_care: >-
+  Health data about vulnerable adults — consent and data protection by design (UK GDPR),
+  data minimisation and safeguarding throughout. The tool supports staff and carers; it
+  never replaces professional judgement, and must fail safe.
+
+
+sensitivity:
+  personal_data: false
+  special_category: false
+  note: >-
+    The REAL service data is consent-held special-category health data and must NEVER enter
+    this layer. Only a synthetic cohort generated in this repo is published. Any team
+    wanting real data does so inside the charity's own governance, not here.
+
+
+sources:
+  - id: ukhsa-alerts
+    provenance: real
+    name: UKHSA Heat-Health Alerts
+    publisher: UK Health Security Agency
+    # URL CORRECTED 2026-08-15 — the catalogued gov.uk collection URL was dead (404).
+    # The alerts and their API live on the UKHSA data dashboard.
+    url: https://ukhsa-dashboard.data.gov.uk/weather-health-alerts
+    licence: OGL-3.0
+    redistributable: true
+    licence_reviewed: true    # D4 cleared 2026-08-15, WITH the boundary below
+    licence_evidence: >-
+      UKHSA data dashboard, checked 2026-08-15: "All content is available under the
+      Open Government Licence v3.0", Crown copyright. An API is published at
+      ukhsa-dashboard.data.gov.uk/access-our-data/. This clears the ALERTS — the
+      alert level published by UKHSA for a region and day, which is what the
+      alert_history gold table needs.
+    attribution_required:
+      - "Contains public sector information licensed under the Open Government Licence v3.0"
+    format: json
+    approx_size_mb: 2
+    notes: >-
+      Live during the alert season, 1 Jun - 30 Sep (England). This is the one source
+      refreshed daily during event week.
+
+      BOUNDARY, and it matters given the metoffice finding below: the Weather-Health
+      Alerting system is run by UKHSA "in partnership with the Met Office". What is
+      cleared here is UKHSA's published ALERT — a level, a region and a date, which is
+      UKHSA's own product under OGL. The underlying MET OFFICE FORECAST DATA is NOT
+      cleared by this and is not covered by the dashboard's OGL statement. Do not
+      treat an OGL alert feed as licence cover for the meteorology behind it.
+  # CORRECTED 2026-08-15 by the D4 review. This was declared OGL-3.0 and
+  # redistributable: true. That is NOT supported by the Met Office's own reuse page,
+  # which states that data usable commercially is available under the EUMETNET licence
+  # and "priced according to the UK PSI re-use data catalogue", with extraction and
+  # distribution costs on top. Nowhere does it say Met Office data is generally OGL.
+  #
+  # Nobody had checked. The flag came from the reasonable-sounding assumption that a UK
+  # public body publishes under OGL — true of a great deal of Met Office output, false
+  # as a blanket statement, and the difference is a licence breach we would have
+  # committed publicly and at scale.
+  #
+  # Contrast `midas-open` in c01, which IS explicitly OGL: that is a NAMED dataset with
+  # a licence statement on its own catalogue record. "Met Office weather data" is a
+  # publisher, and a publisher cannot be licence-reviewed.
+  #
+  # To clear this: name the specific product, find its licence statement, and split it
+  # into its own source. DataPoint and the open MIDAS products are the likely
+  # candidates. Until then it ships as a pointer with loader code.
+  - id: metoffice
+    provenance: real
+    name: Met Office weather data
+    publisher: Met Office
+    url: https://www.metoffice.gov.uk/services/data
+    licence: review-required
+    redistributable: false
+    licence_reviewed: false
+    format: csv
+    approx_size_mb: 300
+    notes: >-
+      UNDER-SPECIFIED — names a publisher, not a dataset, so it cannot be reviewed as
+      written. The Met Office prices commercial reuse under the EUMETNET licence; do
+      not assume OGL. See the comment above.
+  - id: awhp
+    provenance: real
+    name: Adverse Weather and Health Plan
+    publisher: UKHSA
+    url: https://www.gov.uk/government/publications/adverse-weather-and-health-plan
+    licence: OGL-3.0
+    redistributable: true
+    licence_reviewed: true    # D4 cleared 2026-08-15
+    licence_evidence: >-
+      gov.uk publication footer, checked 2026-08-15: "All content is available under
+      the Open Government Licence v3.0, except where otherwise stated."
+      https://www.gov.uk/government/publications/adverse-weather-and-health-plan
+    format: pdf
+    approx_size_mb: 6
+  - id: charity-service
+    provenance: real
+    name: Charity service knowledge
+    publisher: Partner charity
+    url: https://example.invalid/
+    licence: not-redistributable
+    redistributable: false
+    licence_reviewed: false   # D4 — blocks mirroring until true
+    notes: >-
+      Consent-held special-category health data. NEVER mirrored. A synthetic cohort
+      stands in for it — see synthetic-cohort below.
+  - id: synthetic-cohort
+    provenance: synthetic
+    name: Synthetic vulnerable-adult cohort
+    publisher: Innovation Forum x R1X
+    url: https://github.com/Innovation-forum-Cambridgeshire/hackathon-data
+    licence: CC0-1.0
+    redistributable: true
+    licence_reviewed: true    # authored by us under CC0 — no third-party review needed
+    generator: synthetic_cohort   # build/generators/synthetic_cohort.py
+    licence_evidence: >-
+      Authored by Innovation Forum x R1X and released by us under CC0-1.0. No
+      third-party rights subsist: the corpus is generated by a seeded generator in
+      this repository, not collected, so there is no upstream licensor to clear.
+      Recorded 2026-08-15. This is the ONLY category where we are the licensor —
+      everything else needs a citation to someone else's published terms.
+    format: parquet
+    approx_size_mb: 12
+    notes: >-
+      Generated to match the SHAPE of the real service data without deriving from any
+      individual. Generator and seed live in this repo so it is reproducible and
+      auditable.
+
+gold_tables:
+  # ALL THREE TABLES ARE GENERATED, including the two that look like public data.
+  #
+  # `ukhsa-alerts` IS licence-cleared (OGL) but has no fetcher, and inventing a
+  # fetcher's output is not fetching. `metoffice` is pointer-only after the D4
+  # review — the Met Office prices commercial reuse under the EUMETNET licence.
+  # So neither can be real yet, and each table says so on its own description so
+  # the caveat travels with the data rather than living only here.
+  - name: alert_history
+    description: >-
+      Heat-health alert level by region and day. SYNTHETIC — generated with a realistic
+      seasonal pattern, not the UKHSA feed. Switch to `ukhsa-alerts` once a fetcher exists.
+    grain: One row per region × day
+    approx_rows: 26298
+    csv_twin: true
+    source: synthetic-cohort
+    columns:
+      - { name: region,                    type: string,   description: "One of the nine English regions UKHSA issues alerts for." }
+      - { name: alert_date,                type: date,     description: "Alert day, ISO-8601." }
+      - { name: alert_level,               type: string,   description: "Green, Yellow, Amber or Red." }
+      - { name: in_alert_season,           type: boolean,  description: "True 1 Jun – 30 Sep, the core heat alerting season in England. Outside it the level is always Green — absence of an alert is not evidence of low risk." }
+      - { name: consecutive_days_at_level, type: integer,  description: "Run length at the current level. Sustained heat matters more than a single hot day, and a single-row read misses that entirely." }
+      - { name: issued_at,                 type: string,   description: "Issue timestamp, ISO-8601." }
+
+  - name: synthetic_cohort
+    description: >-
+      Synthetic cohort with risk factors and care setting. No real person is described.
+      Health-adjacent, so k >= 10 rather than the default 5.
+    grain: One row per synthetic person
+    approx_rows: 5000
+    csv_twin: true
+    source: synthetic-cohort
+    contains_individuals: false
+    # Human judgement, not inferred. The generator assigns these round-robin so
+    # every cell holds >= 10 people BY CONSTRUCTION rather than on average — a tail
+    # cell of three is re-identifiable however synthetic the rows are.
+    quasi_identifiers: [age_band, region, care_setting]
+    k_threshold: 10
+    generalisation:
+      region: nation
+      age_band: age_group
+    columns:
+      - { name: person_id,             type: string,  description: "Synthetic identifier. Not a real person." }
+      - { name: age_band,              type: string,  description: "65-69 through 85+. Quasi-identifier." }
+      - { name: region,                type: string,  description: "English region. Quasi-identifier." }
+      - { name: care_setting,          type: string,  description: "Own home, Sheltered housing, Residential care or Nursing care. Quasi-identifier." }
+      - { name: mobility,              type: string,  description: "Independent through Immobile." }
+      - { name: lives_alone,           type: boolean, description: "Living alone — a major heat-risk factor because nobody notices deterioration." }
+      - { name: has_cardiovascular,    type: boolean, description: "Cardiovascular condition recorded." }
+      - { name: has_respiratory,       type: boolean, description: "Respiratory condition recorded." }
+      - { name: on_diuretics,          type: boolean, description: "On diuretics — raises dehydration risk in heat." }
+      - { name: cognitive_impairment,  type: boolean, description: "Cognitive impairment recorded — affects ability to self-manage in heat." }
+      - { name: prior_heat_admission,  type: boolean, description: "Previous heat-related admission." }
+      - { name: care_visits_per_week,  type: integer, description: "Scheduled care visits per week." }
+      - { name: predicted_risk,        type: double,  description: "Model score, 0–1. DELIBERATELY MISCALIBRATED — it ranks correctly but is roughly 2.7x too high in absolute terms. In a heat-health setting the absolute number is what triggers a visit, so ranking well is not enough. This is the point of the challenge notebook, not a defect." }
+      - { name: risk_band,             type: string,  description: "Low, Medium or High, derived from predicted_risk." }
+      - { name: heat_event_last_summer, type: boolean, description: "Ground truth: whether a heat-related event occurred. Compare against predicted_risk to see the calibration gap." }
+
+  - name: region_weather_daily
+    description: >-
+      Daily temperature and humidity by area. SYNTHETIC — `metoffice` is pointer-only
+      after the D4 licence review, so nothing here is an observation. Do not report a
+      temperature finding from this as if it were measured.
+    grain: One row per area × day
+    approx_rows: 119802
+    csv_twin: true
+    source: synthetic-cohort
+    columns:
+      - { name: area,                   type: string,  description: "County-level area. FINER than the regional grain of alert_history — joining the two is a real join, not a rename." }
+      - { name: observation_date,       type: date,    description: "Observation day, ISO-8601." }
+      - { name: temp_max_c,             type: double,  description: "Daily maximum temperature, Celsius." }
+      - { name: temp_min_c,             type: double,  description: "Daily minimum temperature, Celsius. Overnight minima matter — heat risk is driven by nights that do not cool." }
+      - { name: relative_humidity_pct,  type: double,  description: "Relative humidity, percent." }
+      - { name: heat_index_c,           type: double,  description: "Apparent temperature combining heat and humidity. Diverges from temp_max_c only when both are high." }
+      - { name: is_synthetic,           type: boolean, description: "Always true. Present so the caveat survives a join, a filter and an export into someone's slide." }
+
+documents:
+  - id: awhp
+    provenance: real
+    name: Adverse Weather and Health Plan
+    format: pdf
+    url: https://www.gov.uk/government/publications/adverse-weather-and-health-plan
+    licence: OGL-3.0
+    licence_reviewed: true    # cleared 2026-08-15, same publication as the source of the same id
+    licence_evidence: >-
+      gov.uk publication footer, checked 2026-08-15: "All content is available under
+      the Open Government Licence v3.0, except where otherwise stated."
+    extract_markdown: true
+    chunk: true
