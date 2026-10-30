@@ -110,12 +110,19 @@ A full interactive session walkthrough is available at [docs/demo_walkthrough.we
 
 ## 6. Reproducibility: How to Run Locally
 
-### Step 1: Build the Gold Parquet Dataset
+### Step 1: Install Dependencies
+```bash
+pip install -r requirements.txt
+# or activate the virtualenv if already created:
+# source .venv/bin/activate
+```
+
+### Step 2: Build the Gold Parquet Dataset
 ```bash
 python build/build.py build --challenge c03-beyond-the-mainframe --version v1 --out sample/data/c03-beyond-the-mainframe
 ```
 
-### Step 2: Run the DuckDB SQL Queries
+### Step 3: Run the DuckDB SQL Queries
 ```bash
 # Option A: Formatted Python DuckDB runner
 python consumers/run_duckdb.py
@@ -124,7 +131,7 @@ python consumers/run_duckdb.py
 duckdb < consumers/duckdb.sql
 ```
 
-### Step 3: Launch the Streamlit Dashboard
+### Step 4: Launch the Streamlit Dashboard
 ```bash
 streamlit run consumers/app.py
 ```
