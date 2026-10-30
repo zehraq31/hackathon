@@ -36,7 +36,7 @@ SELECT business_unit,
        round(100 * sum(cost_gbp) / sum(sum(cost_gbp)) OVER (), 1) AS pct_of_total
 FROM cost GROUP BY 1 ORDER BY cost_gbp DESC LIMIT 15;
 
--- 4. Normalise before comparing. Total spend says where the money is; cost per
+-- 4. Normalise before comparing. Total spend says where the money is — cost per
 --    unit says whether it is well spent, and the two often disagree.
 SELECT platform,
        round(sum(cost_gbp), 0)                    AS cost_gbp,
