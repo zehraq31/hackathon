@@ -1,0 +1,18 @@
+# FinOps Intelligence & Mainframe Modernisation Dashboard
+# Challenge 03: Beyond the Mainframe — Innovation Forum × R1X
+
+# Dashboard & OLAP Engine
+streamlit>=1.30.0
+duckdb>=0.10.0
+
+# Data Processing & Storage
+pandas>=2.0.0
+pyarrow>=14.0.0
+numpy>=1.24.0
+
+# Visualisation
+plotly>=5.18.0
+
+# Challenge Build & Manifest
+PyYAML>=6.0
+requests>=2.30.0
